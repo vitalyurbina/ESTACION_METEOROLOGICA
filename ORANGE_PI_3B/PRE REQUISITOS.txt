@@ -1,0 +1,109 @@
+
+Informe Técnico – Configuración de Orange Pi 3B como Servidor IoT
+Sistema Operativo: Armbian Minimal
+------------------------------------------------------------
+
+Elección del sistema operativo
+------------------------------
+Para este proyecto se utilizó Armbian Minimal, una distribución basada en Debian diseñada específicamente para placas como la Orange Pi 3B. Esta versión "minimal" no cuenta con entorno gráfico, lo cual es ideal para dispositivos embebidos y servidores, ya que permite un mejor rendimiento y menor consumo de recursos.
+
+Se pretende montar un servidor que almacene datos provenientes de sensores conectados a un microcontrolador, y luego visualizarlos de manera remota mediante herramientas como MySQL y Grafana.
+
+El sistema operativo puede ser descargado desde la siguiente página oficial:
+https://www.armbian.com/orangepi3b/
+
+Post instalación
+-----------------
+Una vez instalado Armbian en la tarjeta microSD e iniciado el sistema, se recomienda realizar una actualización del sistema operativo:
+
+$ sudo apt update
+$ sudo apt upgrade
+
+Instalación de MySQL (MariaDB)
+-------------------------------
+Se utilizará MariaDB, un sistema de gestión de bases de datos relacional que es compatible con MySQL y adecuado para sistemas ligeros.
+
+Instalación:
+
+$ sudo apt install mariadb
+
+Configuración básica de MySQL
+------------------------------
+Una vez instalado, se recomienda asegurar la instalación de MariaDB:
+
+$ sudo mysql_secure_installation
+
+Durante este proceso, se solicita:
+- Definir una contraseña para el usuario root.
+- Eliminar usuarios anónimos.
+- Desactivar el acceso remoto al usuario root.
+- Eliminar la base de datos de prueba.
+- Recargar los privilegios.
+
+Acceder a la base de datos:
+
+$ sudo mariadb -u root -p
+
+Crear base de datos, usuario y tabla:
+
+CREATE DATABASE sensores;
+CREATE USER 'grafana'@'%' IDENTIFIED BY 'clave_segura';
+GRANT ALL PRIVILEGES ON sensores.* TO 'grafana'@'%';
+FLUSH PRIVILEGES;
+
+USE sensores;
+
+CREATE TABLE valores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    temperatura FLOAT,
+    humedad FLOAT,
+    uv FLOAT,
+    presion FLOAT,
+    altitud FLOAT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+EXIT;
+
+Permitir conexiones remotas
+----------------------------
+Editar el archivo de configuración:
+
+$ sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf
+
+Modificar la línea:
+bind-address = 0.0.0.0
+
+Luego, reiniciar el servicio:
+
+$ sudo systemctl restart mariadb
+
+Instalación de Grafana
+----------------------
+Agregar la clave y el repositorio:
+
+$ sudo apt install -y software-properties-common
+$ sudo apt install -y gnupg2 curl
+
+$ curl -fsSL https://packages.grafana.com/gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/grafana.gpg
+$ echo "deb [signed-by=/etc/apt/trusted.gpg.d/grafana.gpg] https://packages.grafana.com/oss/deb stable main" | sudo tee /etc/apt/sources.list.d/grafana.list
+
+Actualizar repositorios e instalar Grafana:
+
+$ sudo apt update
+$ sudo apt install grafana
+
+Habilitar e iniciar el servicio:
+
+$ sudo systemctl enable grafana-server
+$ sudo systemctl start grafana-server
+
+Acceso a Grafana
+-----------------
+Desde un navegador en la misma red, acceder a:
+
+http://<IP_de_la_Orange_Pi>:3000
+
+Credenciales por defecto:
+Usuario: admin
+Contraseña: admin
