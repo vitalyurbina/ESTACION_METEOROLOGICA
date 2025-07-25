@@ -1,0 +1,49 @@
+QUERY TEMPERATURA:
+
+SELECT
+  UNIX_TIMESTAMP(CONCAT(FECHA, ' ', HORA)) + (5 * 3600) AS time_sec,
+  TEMPERATURA as value,
+  'Temp (°C)' as metric
+FROM VALORES
+
+ORDER BY time_sec DESC;
+
+
+QUERY UV:
+
+SELECT
+  UNIX_TIMESTAMP(CONCAT(FECHA, ' ', HORA)) + (5 * 3600) AS time_sec,
+  RADIACION as value,
+  'RADIACIÓN SOLAR (W/m²)' as metric
+FROM VALORES
+
+ORDER BY time_sec ASC;
+
+
+
+QUERY HUMEDAD:
+SELECT
+  UNIX_TIMESTAMP(CONCAT(FECHA, ' ', HORA)) + (5 * 3600) AS time_sec,
+  HUMEDAD as value,
+  'Temperatura (°C)' as metric
+FROM VALORES
+ORDER BY time_sec ASC
+
+
+
+QUERY PRESION:
+SELECT
+  UNIX_TIMESTAMP(CONCAT(FECHA, ' ', HORA)) + (5 * 3600) AS time_sec,
+  PRESION as value,
+  'Presión (hPa)' as metric
+FROM VALORES
+
+
+QUERY ALTURA:
+SELECT
+  UNIX_TIMESTAMP(CONCAT(FECHA, ' ', HORA)) + (5 * 3600) AS time_sec,
+  ROUND(44330 * (1 - POW(PRESION / 1013.25, 1 / 5.255)), 2) as value,
+  'Altura (m)' as metric
+FROM VALORES
+
+ORDER BY time_sec ASC;
