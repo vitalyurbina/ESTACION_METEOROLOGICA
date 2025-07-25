@@ -7,7 +7,7 @@ Elección del sistema operativo
 ------------------------------
 Para este proyecto se utilizó Armbian Minimal, una distribución basada en Debian diseñada específicamente para placas como la Orange Pi 3B. Esta versión "minimal" no cuenta con entorno gráfico, lo cual es ideal para dispositivos embebidos y servidores, ya que permite un mejor rendimiento y menor consumo de recursos.
 
-Se pretende montar un servidor que almacene datos provenientes de sensores conectados a un microcontrolador, y luego visualizarlos de manera remota mediante herramientas como MySQL y Grafana.
+Se pretende montar un servidor que almacene datos provenientes de sensores conectados a un microcontrolador, y luego almacenarlos en una base de datos para su posterior análisis o visualización.
 
 El sistema operativo puede ser descargado desde la siguiente página oficial:
 https://www.armbian.com/orangepi3b/
@@ -78,32 +78,12 @@ Luego, reiniciar el servicio:
 
 $ sudo systemctl restart mariadb
 
-Instalación de Grafana
-----------------------
-Agregar la clave y el repositorio:
+Comunicación con el microcontrolador (ESP32)
+--------------------------------------------
+Se crearon dos archivos Python para gestionar la comunicación serial y el almacenamiento en la base de datos.
 
-$ sudo apt install -y software-properties-common
-$ sudo apt install -y gnupg2 curl
+- Uno de los archivos se encarga de abrir el puerto serial `/dev/ttyACM0`, enviar la letra `A` al microcontrolador (Arduino Nano ESP32), y esperar a recibir los datos en formato separado por comas.
+- Luego, esos datos se separan y se insertan en la base de datos `sensores`, tabla `valores`.
 
-$ curl -fsSL https://packages.grafana.com/gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/grafana.gpg
-$ echo "deb [signed-by=/etc/apt/trusted.gpg.d/grafana.gpg] https://packages.grafana.com/oss/deb stable main" | sudo tee /etc/apt/sources.list.d/grafana.list
+Este mecanismo permite mantener la Orange Pi como nodo de adquisición de datos, actuando como intermediario entre el microcontrolador y el servidor de base de datos.
 
-Actualizar repositorios e instalar Grafana:
-
-$ sudo apt update
-$ sudo apt install grafana
-
-Habilitar e iniciar el servicio:
-
-$ sudo systemctl enable grafana-server
-$ sudo systemctl start grafana-server
-
-Acceso a Grafana
------------------
-Desde un navegador en la misma red, acceder a:
-
-http://<IP_de_la_Orange_Pi>:3000
-
-Credenciales por defecto:
-Usuario: admin
-Contraseña: admin
